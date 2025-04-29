@@ -37,6 +37,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <style>{`
             html, body, #__next {
               height: 100%;
+              padding: 0;
+              margin: 0;
             }
             #__next {
               margin: 0 auto;

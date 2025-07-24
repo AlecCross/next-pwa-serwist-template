@@ -10,7 +10,17 @@ const withSerwist = withSerwistInit({
   cacheOnNavigation: true,
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
-  additionalPrecacheEntries: [{ url: "/~offline", revision }],
+  additionalPrecacheEntries: [
+    { url: "/", revision },
+    { url: "/favicon.ico", revision },
+    { url: "/manifest.json", revision },
+    { url: "/robots.txt", revision },
+    { url: "/~offline", revision },
+    { url: "/icons/icon-512x512.png", revision },
+    { url: "/icons/apple-touch-icon.png", revision },
+    { url: "/icons/android-chrome-192x192.png", revision },
+    // Додайте інші важливі сторінки/ресурси
+  ],
 });
 
 /** @type {import("next").NextConfig} */

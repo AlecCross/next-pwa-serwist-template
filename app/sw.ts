@@ -1,68 +1,56 @@
-import { defaultCache } from "@serwist/next/worker";
-import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { Serwist, CacheFirst, NetworkFirst, CacheableResponsePlugin, ExpirationPlugin } from "serwist";
+import { defaultCache } from "@serwist/next/worker"
+import type { PrecacheEntry, SerwistGlobalConfig } from "serwist"
+import { Serwist } from "serwist"
 
+// This declares the value of `injectionPoint` to TypeScript.
+// `injectionPoint` is the string that will be replaced by the
+// actual precache manifest. By default, this string is set to
+// `"self.__SW_MANIFEST"`.
 declare global {
-  interface WorkerGlobalScope extends SerwistGlobalConfig {
-    __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
-  }
+    interface WorkerGlobalScope extends SerwistGlobalConfig {
+        __SW_MANIFEST: (PrecacheEntry | string)[] | undefined
+    }
 }
 
-declare const self: ServiceWorkerGlobalScope;
-
-const appPaths = [
-  '/',
-];
+declare const self: ServiceWorkerGlobalScope
 
 const serwist = new Serwist({
-  precacheEntries: self.__SW_MANIFEST,
-  precacheOptions: {
-    cleanupOutdatedCaches: true,
-    concurrency: 10,
-    ignoreURLParametersMatching: [],
-  },
-  skipWaiting: true,
-  clientsClaim: true,
-  navigationPreload: true,
-  disableDevLogs: true,
-  fallbacks: {
-    entries: [
-      {
-        url: "/~offline",
-        matcher({ request }) {
-          return request.destination === "document";
-        },
-      },
-    ],
-  },
-  runtimeCaching: [
-  {
-    matcher: ({ url, request }: any) => url.pathname.startsWith('/apps-icons/') && request.destination === 'image',
-    handler: new CacheFirst({
-      cacheName: 'apps-icons-cache',
-      plugins: [
-        new CacheableResponsePlugin({ statuses: [0, 200] }),
-        new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 }),
-      ],
-    }),
-  },
-  {
-    matcher: ({ url, request }: any) =>
-        request.destination === 'document' &&
-        appPaths.some(path =>
-          path === '/'
-            ? url.pathname === '/'
-            : url.pathname.startsWith(path)
-        ),
-    handler: new NetworkFirst({
-      cacheName: 'pwa-app-pages-cache',
-      plugins: [
-        new CacheableResponsePlugin({ statuses: [0, 200] }),
-        new ExpirationPlugin({ maxEntries: 20, maxAgeSeconds: 7 * 24 * 60 * 60 }),
-      ],
-    }),
-  },
-],
-});
+    precacheEntries: self.__SW_MANIFEST,
+    skipWaiting: true,
+    clientsClaim: true,
+    navigationPreload: true,
+    disableDevLogs: true,
+    precacheOptions: {
+        cleanupOutdatedCaches: true,
+        ignoreURLParametersMatching: [/.*/],
+    },
+    fallbacks: {
+        entries: [
+            {
+                url: "/~offline",
+                matcher({ request }) {
+                    return request.destination === "document"
+                },
+            },
+        ],
+    },
+    runtimeCaching: defaultCache,
+})
 
-serwist.addEventListeners(); // Обов'язково в кінці, без додаткових кастомних слухачів 'install'
+const urlsToCache = ["/", "/dashboard", "/~offline"] as const
+
+self.addEventListener("install", (event) => {
+    event.waitUntil(
+        Promise.all(
+            urlsToCache.map((entry) => {
+                const request = serwist.handleRequest({
+                    request: new Request(entry),
+                    event,
+                })
+                return request
+            }),
+        ),
+    )
+})
+
+serwist.addEventListeners()

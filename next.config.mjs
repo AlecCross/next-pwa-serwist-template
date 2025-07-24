@@ -12,13 +12,16 @@ const withSerwist = withSerwistInit({
   swDest: "public/sw.js",
   additionalPrecacheEntries: [
     { url: "/", revision },
-    { url: "/favicon.ico", revision },
+    { url: "/favicon.webp", revision },
     { url: "/manifest.json", revision },
     { url: "/robots.txt", revision },
     { url: "/~offline", revision },
-    { url: "/icons/icon-512x512.png", revision },
-    { url: "/icons/apple-touch-icon.png", revision },
-    { url: "/icons/android-chrome-192x192.png", revision },
+    { url: "/icons/icon-144.webp", revision },
+    { url: "/icons/icon-180.webp", revision },
+    { url: "/icons/icon-192.webp", revision },
+    { url: "/icons/icon-256.webp", revision },
+    { url: "/icons/icon-384.webp", revision },
+    { url: "/icons/icon-512.webp", revision },
     // Додайте інші важливі сторінки/ресурси
   ],
 });
